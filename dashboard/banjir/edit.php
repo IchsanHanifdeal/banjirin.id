@@ -1,3 +1,42 @@
+<?php
+session_start();
+include '../../backend/koneksi.php';
+
+$idToUpdate = '';
+
+if (isset($_GET['id'])) {
+    $idToUpdate = $_GET['id'];
+
+    $sqlGetData = "SELECT * FROM banjir WHERE id = '$idToUpdate'";
+    $resultGetData = mysqli_query($conn, $sqlGetData);
+
+    if ($resultGetData) {
+        $rowData = mysqli_fetch_assoc($resultGetData);
+        $nama = $rowData['nama_daerah'];
+        $lat = $rowData['latitude'];
+        $long = $rowData['longitude'];
+        $level = $rowData['level'];
+    }
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $namaDaerah = mysqli_real_escape_string($conn, $_POST["nama_daerah"]);
+    $latitude = mysqli_real_escape_string($conn, $_POST["latitude"]);
+    $longitude = mysqli_real_escape_string($conn, $_POST["longitude"]);
+    $level = mysqli_real_escape_string($conn, $_POST["level"]);
+
+    $sqlUpdate = "UPDATE banjir SET nama_daerah = '$namaDaerah', latitude = '$latitude', longitude = '$longitude', level = '$level' WHERE id = '$idToUpdate'";
+    $resultUpdate = mysqli_query($conn, $sqlUpdate);
+
+    if ($resultUpdate) {
+        header('location: banjir.php');
+    } else {
+        echo json_encode(array("status" => "error", "message" => "Error: " . mysqli_error($conn)));
+    }
+}
+
+mysqli_close($conn);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,9 +58,16 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <!-- CSS Files -->
     <link id="pagestyle" href="../../plugins/assets/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
     <!-- Nepcha Analytics (nepcha.com) -->
-    <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
-    <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQqCVzh9CHvZAJrfAoR-mVZD-dZxap2Xo&libraries=places" defer></script>
+    <!-- Include SweetAlert CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+
 </head>
 
 <body class="g-sidenav-show  bg-gray-200">
@@ -66,26 +112,62 @@
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
         <!-- Navbar -->
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
-            <div class="container-fluid py-4">
-                <div class="col-12">
-                    <div class="card my-4">
-                        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-                            <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
-                                <h6 class="text-white text-capitalize ps-3">Edit Lokasi Banjir</h6>
-                            </div>
-                        </div>
 
+        </nav>
+        <!-- End Navbar -->
+        <div class="container-fluid py-4">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow">
+                        <div class="card-header bg-gradient-primary shadow-primary border-0">
+                            <h6 class="text-white text-uppercase mb-0">Edit Lokasi Banjir</h6>
+                        </div>
+                        <div class="card-body px-4">
+                            <div id="map" style="height: 600px;"></div>
+                            <form method="post" action="">
+                                <div class="mb-3">
+                                    <label for="nama_daerah" class="form-label">Nama Daerah:</label>
+                                    <input type="text" name="nama_daerah" id="nama_daerah" class="form-control" value="<?php echo $nama; ?>" readonly required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="latitude" class="form-label">Latitude:</label>
+                                    <input type="text" id="latitude" name="latitude" class="form-control" value="<?php echo $lat; ?>" readonly required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="longitude" class="form-label">Longitude:</label>
+                                    <input type="text" id="longitude" name="longitude" class="form-control" value="<?php echo $long; ?>" readonly required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="level" class="form-label">Level:</label>
+                                    <select name="level" id="level" class="form-select" required>
+                                        <?php
+                                        $options = ['rendah', 'menengah', 'tinggi'];
+
+                                        foreach ($options as $option) {
+                                            $selected = ($level == $option) ? 'selected' : '';
+                                            echo "<option value=\"$option\" $selected>$option</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-3">Simpan Data</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </nav>
-        <!-- End Navbar -->
+        </div>
     </main>
     <!--   Core JS Files   -->
     <script src="../../plugins/assets/js/core/popper.min.js"></script>
     <script src="../../plugins/assets/js/core/bootstrap.min.js"></script>
     <script src="../../plugins/assets/js/plugins/perfect-scrollbar.min.js"></script>
     <script src="../../plugins/assets/js/plugins/smooth-scrollbar.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         var win = navigator.platform.indexOf('Win') > -1;
         if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -95,10 +177,109 @@
             Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
         }
     </script>
-    <!-- Github buttons -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
-    <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
     <script src="../../plugins/assets/js/material-dashboard.min.js?v=3.1.0"></script>
+    <script>
+        let map, marker;
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: {
+                    lat: 0.537488,
+                    lng: 101.448387
+                },
+                zoom: 15,
+            });
+
+            <?php if (isset($lat) && isset($long)) : ?>
+                const initialLocation = new google.maps.LatLng(<?php echo $lat; ?>, <?php echo $long; ?>);
+                placeMarker(initialLocation);
+            <?php endif; ?>
+
+
+            map.addListener("click", (event) => {
+                placeMarker(event.latLng);
+            });
+        }
+
+        function placeMarker(location) {
+            if (marker) {
+                marker.setPosition(location);
+            } else {
+                marker = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                });
+            }
+
+            $("#latitude").val(location.lat());
+            $("#longitude").val(location.lng());
+
+            reverseGeocode(location);
+            updateMarkerColor();
+        }
+
+        function removeMarker() {
+            if (marker) {
+                marker.setMap(null);
+                marker = null;
+
+                $("#latitude").val("");
+                $("#longitude").val("");
+                $("#nama_daerah").val("");
+            }
+        }
+
+        function reverseGeocode(location) {
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+                'location': location
+            }, function(results, status) {
+                if (status === 'OK') {
+                    if (results[0]) {
+                        const namaDaerah = results[0].formatted_address;
+                        $("#nama_daerah").val(namaDaerah);
+                    }
+                }
+            });
+        }
+
+        function updateMarkerColor() {
+            const level = $("#level").val();
+            let markerColor;
+
+            switch (level) {
+                case "rendah":
+                    markerColor = "green";
+                    break;
+                case "menengah":
+                    markerColor = "yellow";
+                    break;
+                case "tinggi":
+                    markerColor = "red";
+                    break;
+                default:
+                    markerColor = "blue";
+            }
+
+            if (marker) {
+                const iconUrl = `http://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`;
+                marker.setIcon({
+                    url: iconUrl,
+                    scaledSize: new google.maps.Size(40, 40),
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            initMap();
+
+            $("#level").change(function() {
+                updateMarkerColor();
+            });
+
+        });
+    </script>
+
 </body>
 
 </html>

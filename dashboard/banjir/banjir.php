@@ -100,7 +100,7 @@ include '../../backend/koneksi.php';
                                                 $id = $rowd['id'];
                                                 $nama = $rowd['nama_daerah'];
                                                 $longitude = $rowd['longitude'];
-                                                $latitude = $rowd['latittude'];
+                                                $latitude = $rowd['latitude'];
                                                 $level = $rowd['level'];
                                         ?>
                                                 <tr>
@@ -126,6 +126,9 @@ include '../../backend/koneksi.php';
                                 </table>
                             </div>
                         </div>
+                    </div>
+                    <div class="text-right">
+                        <a href="tambah.php" class="btn btn-primary float-end">Tambah Data</a>
                     </div>
                 </div>
             </div>
