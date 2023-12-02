@@ -110,8 +110,15 @@
                     $_SESSION['role'] = $user['role'];
 
                     if ($user['role'] == 'admin' || $user['role'] == 'user') {
-                        header("Location: dashboard/dashboard.php");
-                        exit();
+                        echo "<script>
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Login Berhasil',
+                                text: 'Selamat datang, " . $user['username'] . "!',
+                            }).then(function() {
+                                window.location.href = 'dashboard/index.php';
+                            });
+                          </script>";
                     } else {
                         displayError("Peran tidak valid!");
                     }
@@ -143,6 +150,7 @@
         exit();
     }
     ?>
+
 
     <!--   Core JS Files   -->
     <script src="plugins/assets/js/core/popper.min.js"></script>
