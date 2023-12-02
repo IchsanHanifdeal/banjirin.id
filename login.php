@@ -114,7 +114,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Login Berhasil',
-                                text: 'Selamat datang, " . $user['username'] . "!',
+                                text: 'Selamat datang " . $user['username'] . "!',
                             }).then(function() {
                                 window.location.href = 'dashboard/index.php';
                             });
