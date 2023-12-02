@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQqCVzh9CHvZAJrfAoR-mVZD-dZxap2Xo&callback=initGoogleMap" async defer></script>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #6C5F5B">
         <div class="container">
             <a class="navbar-brand" href="#">Banjirin.id</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -23,7 +24,7 @@
                         <a class="nav-link active" aria-current="page" href="#home">Home</a>
                     </li>
                     <li class="nav-item text-right">
-                        <a class="nav-link" aria-current="page" href="login.php">Login</a>
+                        <a class="nav-link" aria-current="page" href="login.php ">Login</a>
                     </li>
                 </ul>
             </div>
@@ -42,10 +43,14 @@
 
         function initGoogleMap() {
             googleMap = new google.maps.Map(document.getElementById("google-map"), {
-                center: { lat: 0.537488, lng: 101.448387 },
+                center: {
+                    lat: 0.537488,
+                    lng: 101.448387
+                },
                 zoom: 15,
             });
         }
-    </script>    
+    </script>
 </body>
+
 </html>
