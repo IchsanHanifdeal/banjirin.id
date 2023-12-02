@@ -1,3 +1,8 @@
+<?php
+session_start();
+include '../../backend/koneksi.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,9 +24,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <!-- CSS Files -->
     <link id="pagestyle" href="../../plugins/assets/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
-    <!-- Nepcha Analytics (nepcha.com) -->
-    <!-- Nepcha is a easy-to-use web analytics. No cookies and fully compliant with GDPR, CCPA and PECR. -->
-    <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
 </head>
 
 <body class="g-sidenav-show  bg-gray-200">
@@ -87,6 +89,40 @@
                                             <th class="text-secondary opacity-7"></th>
                                         </tr>
                                     </thead>
+                                    <tbody>
+                                        <?php
+                                        $no = 1;
+                                        $sqld = "SELECT * FROM banjir";
+                                        $resultd = mysqli_query($conn, $sqld);
+
+                                        if ($resultd) {
+                                            while ($rowd = mysqli_fetch_assoc($resultd)) {
+                                                $id = $rowd['id'];
+                                                $nama = $rowd['nama_daerah'];
+                                                $longitude = $rowd['longitude'];
+                                                $latitude = $rowd['latittude'];
+                                                $level = $rowd['level'];
+                                        ?>
+                                                <tr>
+                                                    <td class="text-center"><?php echo $no++; ?></td>
+                                                    <td><?php echo $nama; ?></td>
+                                                    <td class="text-center"><?php echo $longitude; ?></td>
+                                                    <td class="text-center"><?php echo $latitude; ?></td>
+                                                    <td class="text-center"><?php echo $level; ?></td>
+                                                    <td class="text-center">
+                                                        <a href="edit.php?id=<?php echo $id; ?>" class="btn btn-warning">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a class="btn btn-danger" href="#" onclick="confirmDelete(<?php echo $id; ?>)"><i class="fas fa-trash"></i></a>
+                                                    </td>
+                                                </tr>
+                                        <?php
+                                            }
+                                        } else {
+                                            echo "<tr><td colspan='10'>Tidak ada data.</td></tr>";
+                                        }
+                                        ?>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -114,6 +150,24 @@
     <script async defer src="https://buttons.github.io/buttons.js"></script>
     <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
     <script src="../../plugins/assets/js/material-dashboard.min.js?v=3.1.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+    <script>
+        function confirmDelete(id) {
+            Swal.fire({
+                title: "Apa kamu yakin?",
+                text: "Ketika dihapus, Anda tidak dapat mengembalikan data ini!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "hapus.php?id=" + id;
+                } else {}
+            });
+        }
+    </script>
 </body>
 
 </html>
