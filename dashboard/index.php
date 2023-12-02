@@ -63,9 +63,23 @@
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
         <!-- Navbar -->
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
-            <div class="container-fluid py-1 px-3">
-            </div>
         </nav>
+        <div class="container-fluid py-1 px-3 mt-4">
+            <div class="row min-vh-80">
+                <div class="col-12">
+                    <div class="card h-100">
+                        <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                            <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                                <h5 class="text-white text-capitalize ps-3">Dashboard</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="vector-map" class="mt-5 min-height-500"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- End Navbar -->
     </main>
     <!--   Core JS Files   -->

@@ -17,6 +17,8 @@
     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
     <!-- CSS Files -->
     <link id="pagestyle" href="plugins/assets/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
 </head>
@@ -49,21 +51,17 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <form role="form" class="text-start">
+                                <form class="text-start" method="post" action="">
                                     <div class="input-group input-group-outline my-3">
                                         <label class="form-label">Email</label>
-                                        <input type="email" class="form-control">
+                                        <input type="email" name="email" class="form-control">
                                     </div>
                                     <div class="input-group input-group-outline mb-3">
                                         <label class="form-label">Password</label>
-                                        <input type="password" class="form-control">
-                                    </div>
-                                    <div class="form-check form-switch d-flex align-items-center mb-3">
-                                        <input class="form-check-input" type="checkbox" id="rememberMe" checked>
-                                        <label class="form-check-label mb-0 ms-3" for="rememberMe">Remember me</label>
+                                        <input type="password" name="password" class="form-control">
                                     </div>
                                     <div class="text-center">
-                                        <button type="button" class="btn bg-gradient-primary w-100 my-4 mb-2">Sign in</button>
+                                        <button type="submit" class="btn bg-gradient-primary w-100 my-4 mb-2">Sign in</button>
                                         <a class="btn bg-gradient-secondary w-100 my-2 mb-2" href="index.php">Back</a>
                                     </div>
                                 </form>
@@ -81,7 +79,7 @@
                                     document.write(new Date().getFullYear())
                                 </script>,
                                 made with <i class="fa fa-heart" aria-hidden="true"></i> by
-                                <a href="https://www.creative-tim.com" class="font-weight-bold text-white" target="_blank">Ichsan Hanifdeal</a>
+                                <a href="#" class="font-weight-bold text-white" target="_blank">Ichsan Hanifdeal</a>
                             </div>
                         </div>
                     </div>
@@ -89,6 +87,63 @@
             </footer>
         </div>
     </main>
+    <?php
+    session_start();
+    include 'backend/koneksi.php';
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $username = $_POST['email'];
+        $password = $_POST['password'];
+
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result) {
+            if (mysqli_num_rows($result) > 0) {
+                $user = mysqli_fetch_assoc($result);
+
+                if ($password == $user['password']) {
+                    $_SESSION['id_users'] = $user['id_users'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['role'] = $user['role'];
+
+                    if ($user['role'] == 'admin' || $user['role'] == 'user') {
+                        header("Location: dashboard/dashboard.php");
+                        exit();
+                    } else {
+                        displayError("Peran tidak valid!");
+                    }
+                } else {
+                    displayError("Email atau password salah!");
+                }
+            } else {
+                displayError("Email atau password salah!");
+            }
+        } else {
+            displayError("Terjadi kesalahan!");
+        }
+
+        $stmt->close();
+        mysqli_close($conn);
+    }
+
+    function displayError($message)
+    {
+        echo "<script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Login Gagal',
+            text: '$message',
+        }).then(function() {
+            window.location.href = 'login.php';
+        });
+      </script>";
+        exit();
+    }
+    ?>
+
     <!--   Core JS Files   -->
     <script src="plugins/assets/js/core/popper.min.js"></script>
     <script src="plugins/assets/js/core/bootstrap.min.js"></script>
