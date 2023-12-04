@@ -7,8 +7,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $latitude = mysqli_real_escape_string($conn, $_POST["latitude"]);
     $longitude = mysqli_real_escape_string($conn, $_POST["longitude"]);
     $level = mysqli_real_escape_string($conn, $_POST["level"]);
+    $radius = mysqli_real_escape_string($conn, $_POST["radius"]);
 
-    $sql = "INSERT INTO banjir (nama_daerah, latitude, longitude, level) VALUES ('$namaDaerah', '$latitude', '$longitude', '$level')";
+    $sql = "INSERT INTO banjir (nama_daerah, latitude, longitude, level, radius) VALUES ('$namaDaerah', '$latitude', '$longitude', '$level', '$radius')";
     $result = mysqli_query($conn, $sql);
 
     if ($result) {
@@ -131,6 +132,11 @@ mysqli_close($conn);
                                         <option value="menengah">Menengah</option>
                                         <option value="tinggi">Tinggi</option>
                                     </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="radius" class="form-label">Radius (M):</label>
+                                    <input type="number" id="radius" name="radius" class="form-control" required>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary mt-3">Tambah Data</button>

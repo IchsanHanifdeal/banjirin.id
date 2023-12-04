@@ -16,6 +16,7 @@ if (isset($_GET['id'])) {
         $lat = $rowData['latitude'];
         $long = $rowData['longitude'];
         $level = $rowData['level'];
+        $radius = $rowData['radius'];
     }
 }
 
@@ -24,8 +25,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $latitude = mysqli_real_escape_string($conn, $_POST["latitude"]);
     $longitude = mysqli_real_escape_string($conn, $_POST["longitude"]);
     $level = mysqli_real_escape_string($conn, $_POST["level"]);
+    $radius = mysqli_real_escape_string($conn, $_POST["radius"]);
 
-    $sqlUpdate = "UPDATE banjir SET nama_daerah = '$namaDaerah', latitude = '$latitude', longitude = '$longitude', level = '$level' WHERE id = '$idToUpdate'";
+    $sqlUpdate = "UPDATE banjir SET nama_daerah = '$namaDaerah', latitude = '$latitude', longitude = '$longitude', level = '$level', radius = '$radius' WHERE id = '$idToUpdate'";
     $resultUpdate = mysqli_query($conn, $sqlUpdate);
 
     if ($resultUpdate) {
@@ -153,6 +155,12 @@ mysqli_close($conn);
                                         ?>
                                     </select>
                                 </div>
+
+                                <div class="mb-3">
+                                    <label for="radius" class="form-label">Radius (M):</label>
+                                    <input type="number" id="radius" name="radius" class="form-control" value="<?php echo $radius; ?>" required>
+                                </div>
+
                                 <button type="submit" class="btn btn-primary mt-3">Simpan Data</button>
                             </form>
                         </div>
@@ -179,7 +187,7 @@ mysqli_close($conn);
     </script>
     <script src="../../plugins/assets/js/material-dashboard.min.js?v=3.1.0"></script>
     <script>
-        let map, marker;
+        let map, marker, circle;
 
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
@@ -190,18 +198,19 @@ mysqli_close($conn);
                 zoom: 15,
             });
 
-            <?php if (isset($lat) && isset($long)) : ?>
+            <?php if (isset($lat) && isset($long) && isset($radius) && isset($level)) : ?>
                 const initialLocation = new google.maps.LatLng(<?php echo $lat; ?>, <?php echo $long; ?>);
-                placeMarker(initialLocation);
+                placeMarker(initialLocation, <?php echo $radius; ?>, '<?php echo $level; ?>');
             <?php endif; ?>
 
-
             map.addListener("click", (event) => {
-                placeMarker(event.latLng);
+                const radius = $("#radius").val();
+                const level = $("#level").val();
+                placeMarker(event.latLng, radius, level);
             });
         }
 
-        function placeMarker(location) {
+        function placeMarker(location, radius, level) {
             if (marker) {
                 marker.setPosition(location);
             } else {
@@ -211,40 +220,10 @@ mysqli_close($conn);
                 });
             }
 
-            $("#latitude").val(location.lat());
-            $("#longitude").val(location.lng());
-
-            reverseGeocode(location);
-            updateMarkerColor();
-        }
-
-        function removeMarker() {
-            if (marker) {
-                marker.setMap(null);
-                marker = null;
-
-                $("#latitude").val("");
-                $("#longitude").val("");
-                $("#nama_daerah").val("");
+            if (circle) {
+                circle.setMap(null);
             }
-        }
 
-        function reverseGeocode(location) {
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({
-                'location': location
-            }, function(results, status) {
-                if (status === 'OK') {
-                    if (results[0]) {
-                        const namaDaerah = results[0].formatted_address;
-                        $("#nama_daerah").val(namaDaerah);
-                    }
-                }
-            });
-        }
-
-        function updateMarkerColor() {
-            const level = $("#level").val();
             let markerColor;
 
             switch (level) {
@@ -261,24 +240,36 @@ mysqli_close($conn);
                     markerColor = "blue";
             }
 
-            if (marker) {
-                const iconUrl = `http://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`;
-                marker.setIcon({
-                    url: iconUrl,
-                    scaledSize: new google.maps.Size(40, 40),
-                });
-            }
+            const iconUrl = `http://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`;
+            marker.setIcon({
+                url: iconUrl,
+                scaledSize: new google.maps.Size(40, 40),
+            });
+
+            circle = new google.maps.Circle({
+                strokeColor: `#${markerColor}`,
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: `#${markerColor}`,
+                fillOpacity: 0.35,
+                map: map,
+                center: location,
+                radius: parseInt(radius),
+            });
+
+            $("#latitude").val(location.lat());
+            $("#longitude").val(location.lng());
         }
 
         $(document).ready(function() {
             initMap();
 
             $("#level").change(function() {
-                updateMarkerColor();
+                placeMarker(marker.getPosition(), $("#radius").val(), $("#level").val());
             });
-
         });
     </script>
+
 
 </body>
 

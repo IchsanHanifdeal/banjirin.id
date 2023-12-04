@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 02 Des 2023 pada 04.08
--- Versi server: 10.4.27-MariaDB
--- Versi PHP: 7.4.33
+-- Waktu pembuatan: 04 Des 2023 pada 05.45
+-- Versi server: 10.4.20-MariaDB
+-- Versi PHP: 8.0.8
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -31,9 +31,18 @@ CREATE TABLE `banjir` (
   `id` int(11) NOT NULL,
   `nama_daerah` varchar(25) NOT NULL,
   `longitude` varchar(255) NOT NULL,
-  `latittude` varchar(255) NOT NULL,
-  `level` enum('rendah','menengah','tinggi') NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `latitude` varchar(255) NOT NULL,
+  `level` enum('rendah','menengah','tinggi') NOT NULL,
+  `radius` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data untuk tabel `banjir`
+--
+
+INSERT INTO `banjir` (`id`, `nama_daerah`, `longitude`, `latitude`, `level`, `radius`) VALUES
+(2, 'Jl. Riau No.55, Padang Te', '101.4342817077351', '0.525930953053318', 'menengah', 100),
+(3, 'GCGP+3M7, Gg. Pelita, Har', '101.43663883209229', '0.525662677049728', 'tinggi', 1000);
 
 -- --------------------------------------------------------
 
@@ -47,7 +56,7 @@ CREATE TABLE `users` (
   `username` varchar(25) NOT NULL,
   `password` varchar(25) NOT NULL,
   `role` enum('admin','user') NOT NULL DEFAULT 'admin'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data untuk tabel `users`
@@ -80,7 +89,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT untuk tabel `banjir`
 --
 ALTER TABLE `banjir`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `users`

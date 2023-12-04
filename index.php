@@ -71,121 +71,157 @@ $rowd = mysqli_fetch_assoc($resultd);
             });
 
             <?php
+            $resultd = mysqli_query($conn, $sqld);
             while ($rowd = mysqli_fetch_assoc($resultd)) {
                 $nama = $rowd['nama_daerah'];
                 $long = $rowd['longitude'];
                 $lat = $rowd['latitude'];
                 $level = $rowd['level'];
+                $radius = $rowd['radius'];
+
+                if (!empty($lat) && !empty($long) && !empty($radius)) {
+                    $icon = '';
+                    $strokeColor = '';
+                    $fillColor = '';
+                    if ($level == 'rendah') {
+                        $icon = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+                        $strokeColor = '#0000FF';
+                        $fillColor = '#0000FF';
+                    } else if ($level == 'menengah') {
+                        $icon = 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
+                        $strokeColor = '#FFFF00';
+                        $fillColor = '#FFFF00';
+                    } else if ($level == 'tinggi') {
+                        $icon = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+                        $strokeColor = '#FF0000';
+                        $fillColor = '#FF0000';
+                    }
             ?>
-                var marker = new google.maps.Marker({
-                    position: {
-                        lat: <?php echo $lat; ?>,
-                        lng: <?php echo $long; ?>
-                    },
-                    map: googleMap,
-                    title: '<?php echo $nama; ?>',
-                    level: '<?php echo $level; ?>'
-                });
+                    var marker = new google.maps.Marker({
+                        position: {
+                            lat: <?php echo $lat; ?>,
+                            lng: <?php echo $long; ?>
+                        },
+                        map: googleMap,
+                        title: '<?php echo $nama; ?>',
+                        level: '<?php echo $level; ?>',
+                        icon: '<?php echo $icon; ?>'
+                    });
 
-                marker.addListener('click', function() {
-                    updateMarkerColor(marker);
-                    calculateAndDisplayRoute(marker.getPosition());
-                });
+                    var circle = new google.maps.Circle({
+                        strokeColor: '<?php echo $strokeColor; ?>',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: '<?php echo $fillColor; ?>',
+                        fillOpacity: 0.35,
+                        map: googleMap,
+                        center: {
+                            lat: <?php echo $lat; ?>,
+                            lng: <?php echo $long; ?>
+                        },
+                        radius: <?php echo $radius; ?>
+                    });
 
-                markers.push(marker);
+                    marker.addListener('click', function() {
+                        updateMarkerColor(this);
+                        calculateAndDisplayRoute(this.getPosition());
+                    });
+
+                    markers.push(marker);
             <?php
+                }
             }
             ?>
-        }
 
-        function updateMarkerColor(marker) {
-            const level = marker.level;
+            function updateMarkerColor(marker) {
+                const level = marker.level;
 
-            let markerColor;
+                let markerColor;
 
-            switch (level) {
-                case "rendah":
-                    markerColor = "green";
-                    break;
-                case "menengah":
-                    markerColor = "yellow";
-                    break;
-                case "tinggi":
-                    markerColor = "red";
-                    break;
-                default:
-                    markerColor = "blue";
+                switch (level) {
+                    case "rendah":
+                        markerColor = "green";
+                        break;
+                    case "menengah":
+                        markerColor = "yellow";
+                        break;
+                    case "tinggi":
+                        markerColor = "red";
+                        break;
+                    default:
+                        markerColor = "blue";
+                }
+
+                const iconUrl = `http://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`;
+                marker.setIcon({
+                    url: iconUrl,
+                    scaledSize: new google.maps.Size(40, 40),
+                });
             }
 
-            const iconUrl = `http://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`;
-            marker.setIcon({
-                url: iconUrl,
-                scaledSize: new google.maps.Size(40, 40),
-            });
-        }
+            function calculateAndDisplayRoute(destination) {
+                var request = {
+                    origin: currentLocationMarker.getPosition(),
+                    destination: destination,
+                    travelMode: 'DRIVING'
+                };
 
-        function calculateAndDisplayRoute(destination) {
-            var request = {
-                origin: currentLocationMarker.getPosition(),
-                destination: destination,
-                travelMode: 'DRIVING'
-            };
+                directionsService.route(request, function(result, status) {
+                    if (status == 'OK') {
+                        directionsRenderer.setDirections(result);
+                    } else {
+                        console.error('Error calculating route:', status);
+                    }
+                });
+            }
 
-            directionsService.route(request, function(result, status) {
-                if (status == 'OK') {
-                    directionsRenderer.setDirections(result);
+            var getCurrentLocationBtn = document.getElementById('getCurrentLocationBtn');
+            getCurrentLocationBtn.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var currentLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        if (currentLocationMarker) {
+                            currentLocationMarker.setMap(null);
+                        }
+
+                        currentLocationMarker = new google.maps.Marker({
+                            position: currentLocation,
+                            map: googleMap,
+                            title: 'Your Location'
+                        });
+
+                        var distances = [];
+                        markers.forEach(function(marker, index) {
+                            var distance = google.maps.geometry.spherical.computeDistanceBetween(
+                                new google.maps.LatLng(currentLocation.lat, currentLocation.lng),
+                                marker.getPosition()
+                            );
+                            distances.push({
+                                index: index,
+                                distance: distance
+                            });
+                        });
+
+                        distances.sort(function(a, b) {
+                            return a.distance - b.distance;
+                        });
+
+                        var closestMarker = markers[distances[0].index];
+
+                        updateMarkerColor(closestMarker);
+                        calculateAndDisplayRoute(closestMarker.getPosition());
+                    }, function(error) {
+                        console.error('Error getting current location:', error);
+                    });
                 } else {
-                    console.error('Error calculating route:', status);
+                    alert('Geolocation is not supported by your browser.');
                 }
             });
         }
-
-        var getCurrentLocationBtn = document.getElementById('getCurrentLocationBtn');
-        getCurrentLocationBtn.addEventListener('click', function() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var currentLocation = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-
-                    if (currentLocationMarker) {
-                        currentLocationMarker.setMap(null);
-                    }
-
-                    currentLocationMarker = new google.maps.Marker({
-                        position: currentLocation,
-                        map: googleMap,
-                        title: 'Your Location'
-                    });
-
-                    var distances = [];
-                    markers.forEach(function(marker, index) {
-                        var distance = google.maps.geometry.spherical.computeDistanceBetween(
-                            new google.maps.LatLng(currentLocation.lat, currentLocation.lng),
-                            marker.getPosition()
-                        );
-                        distances.push({
-                            index: index,
-                            distance: distance
-                        });
-                    });
-
-                    distances.sort(function(a, b) {
-                        return a.distance - b.distance;
-                    });
-
-                    var closestMarker = markers[distances[0].index];
-
-                    updateMarkerColor(closestMarker);
-                    calculateAndDisplayRoute(closestMarker.getPosition());
-                }, function(error) {
-                    console.error('Error getting current location:', error);
-                });
-            } else {
-                alert('Geolocation is not supported by your browser.');
-            }
-        });
     </script>
 
 </body>
